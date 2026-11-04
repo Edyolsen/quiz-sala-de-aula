@@ -14,7 +14,7 @@ st.markdown("""
         background-color: #f0f2f6;
         padding: 25px;
         border-radius: 12px;
-        margin-bottom: 30px;
+        margin-bottom: 20px;
     }
     div.stButton > button:first-child {
         font-size: 35px !important;
@@ -154,15 +154,20 @@ elif st.session_state.fase == 'jogo':
             else:
                 opcoes_limpas.append(op)
         
-        colEsq, colDir = st.columns([3, 1])
-        with colEsq:
-            st.markdown(f"<h2>Vez da {equipe_da_vez} 💰 Valendo {st.session_state.valor_pergunta} pts</h2>", unsafe_allow_html=True)
-        with colDir:
-            if not st.session_state.mostrar_resultado:
-                # CRONÔMETRO GIGANTE COM CAIXA DE DESTAQUE
+        st.markdown(f"<h2>Vez da {equipe_da_vez} 💰 Valendo {st.session_state.valor_pergunta} pts</h2>", unsafe_allow_html=True)
+        
+        # EXIBIÇÃO DA PERGUNTA E DO CRONÓMETRO LADO A LADO
+        if not st.session_state.mostrar_resultado:
+            col_perg, col_tempo = st.columns([3, 1])
+            
+            with col_perg:
+                st.markdown(f'<div class="pergunta-gigante">Pergunta {num_atual}:<br>{pergunta_texto}</div>', unsafe_allow_html=True)
+                
+            with col_tempo:
                 timer_html = """
-                <div style="background-color: #fff0f0; border: 5px solid #ff4b4b; border-radius: 15px; padding: 15px; text-align: center; box-shadow: 0px 4px 10px rgba(0,0,0,0.1);">
-                    <div id="relogio" style="font-size: 80px; font-weight: bold; color: #ff4b4b; margin: 0; line-height: 1;">60s</div>
+                <div style="background-color: #fff0f0; border: 4px solid #ff4b4b; border-radius: 12px; padding: 25px 10px; text-align: center; box-shadow: 0px 4px 10px rgba(0,0,0,0.1); height: 90%;">
+                    <div style="font-size: 24px; font-weight: bold; color: #ff4b4b; text-transform: uppercase;">Tempo</div>
+                    <div id="relogio" style="font-size: 70px; font-weight: bold; color: #ff4b4b; margin-top: 5px; line-height: 1;">60s</div>
                 </div>
                 <script>
                     var tempo = 60;
@@ -175,11 +180,11 @@ elif st.session_state.fase == 'jogo':
                     }, 1000);
                 </script>
                 """
-                components.html(timer_html, height=180)
-        
-        st.markdown(f'<div class="pergunta-gigante">Pergunta {num_atual}:<br>{pergunta_texto}</div>', unsafe_allow_html=True)
-        
-        if not st.session_state.mostrar_resultado:
+                components.html(timer_html, height=200)
+                
+            st.write("---") # Divisória antes das opções de resposta
+            
+            # BOTÕES DE RESPOSTA
             for i, op_texto in enumerate(opcoes_limpas):
                 if st.button(f"👉 {op_texto}", use_container_width=True):
                     st.session_state.opcao_clicada = i
@@ -207,7 +212,9 @@ elif st.session_state.fase == 'jogo':
                     proxima_equipe()
                     st.rerun()
                     
+        # FASE 2: RESULTADO (SEM O CRONÓMETRO, PERGUNTA OCUPA TUDO)
         else:
+            st.markdown(f'<div class="pergunta-gigante">Pergunta {num_atual}:<br>{pergunta_texto}</div>', unsafe_allow_html=True)
             clicada = st.session_state.opcao_clicada
             resultado = st.session_state.resultado_atual
             
