@@ -3,7 +3,7 @@ import streamlit.components.v1 as components
 
 st.set_page_config(layout="wide", page_title="Quiz Show")
 
-# 1. INJEÇÃO DE CSS (FONTES GIGANTES E AJUSTE DO PLACAR)
+# 1. INJEÇÃO DE CSS
 st.markdown("""
     <style>
     .pergunta-gigante {
@@ -25,7 +25,6 @@ st.markdown("""
         white-space: normal !important;
         text-align: left !important;
     }
-    /* Ajuste para evitar que o nome "Equipe" quebre no placar */
     .stAlert p {
         font-size: 30px !important;
         line-height: 1.4 !important;
@@ -91,7 +90,7 @@ elif st.session_state.fase == 'jogo':
     def proxima_equipe():
         st.session_state.turno_atual = (st.session_state.turno_atual + 1) % len(st.session_state.equipes)
 
-    st.markdown("<h1 style='text-align: center;'>🏆 Quiz de Redes 🏆</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center;'>🏆 Quiz Interativo 🏆</h1>", unsafe_allow_html=True)
     st.write("---")
     
     # PLACAR
@@ -114,7 +113,6 @@ elif st.session_state.fase == 'jogo':
 
     # CENA A: PAINEL DE NÚMEROS
     elif st.session_state.pergunta_selecionada is None:
-        # NOVO: Interface para alterar manualmente a equipa
         col_vez1, col_vez2 = st.columns([3, 1])
         with col_vez1:
             st.markdown(f"<h2>Vez da {equipe_da_vez}</h2>", unsafe_allow_html=True)
@@ -129,7 +127,7 @@ elif st.session_state.fase == 'jogo':
                 st.session_state.turno_atual = nova_equipe_idx
                 st.rerun()
         
-        st.write("") # Espaço
+        st.write("") 
         cols = st.columns(5)
         for index, num in enumerate(st.session_state.perguntas_disponiveis):
             if cols[index % 5].button(f"Pergunta {num}", use_container_width=True):
@@ -161,20 +159,23 @@ elif st.session_state.fase == 'jogo':
             st.markdown(f"<h2>Vez da {equipe_da_vez} 💰 Valendo {st.session_state.valor_pergunta} pts</h2>", unsafe_allow_html=True)
         with colDir:
             if not st.session_state.mostrar_resultado:
+                # CRONÔMETRO GIGANTE COM CAIXA DE DESTAQUE
                 timer_html = """
-                <div id="relogio" style="font-size: 50px; font-weight: bold; color: #ff4b4b; text-align: right;">60s</div>
+                <div style="background-color: #fff0f0; border: 5px solid #ff4b4b; border-radius: 15px; padding: 15px; text-align: center; box-shadow: 0px 4px 10px rgba(0,0,0,0.1);">
+                    <div id="relogio" style="font-size: 80px; font-weight: bold; color: #ff4b4b; margin: 0; line-height: 1;">60s</div>
+                </div>
                 <script>
                     var tempo = 60;
                     var display = document.getElementById('relogio');
                     var intervalo = setInterval(function() {
                         tempo--;
                         if (tempo > 10) { display.innerHTML = "⏳ " + tempo + "s"; }
-                        else if (tempo > 0) { display.innerHTML = "⚠️ " + tempo + "s"; display.style.color = 'red'; }
-                        else { display.innerHTML = "🚨 ACABOU!"; clearInterval(intervalo); }
+                        else if (tempo > 0) { display.innerHTML = "⚠️ " + tempo + "s"; display.style.color = '#cc0000'; }
+                        else { display.innerHTML = "🚨 0s"; clearInterval(intervalo); }
                     }, 1000);
                 </script>
                 """
-                components.html(timer_html, height=100)
+                components.html(timer_html, height=180)
         
         st.markdown(f'<div class="pergunta-gigante">Pergunta {num_atual}:<br>{pergunta_texto}</div>', unsafe_allow_html=True)
         
