@@ -1,6 +1,5 @@
 import streamlit as st
 import streamlit.components.v1 as components
-import random
 
 st.set_page_config(layout="wide", page_title="Quiz Show")
 
@@ -27,9 +26,10 @@ st.markdown("""
         text-align: left !important;
     }
     .stAlert p {
-        font-size: 22px !important;
-        line-height: 1.3 !important;
+        font-size: 30px !important;
+        line-height: 1.4 !important;
         font-weight: bold !important;
+        white-space: nowrap; 
     }
     p, h2, h3 {
         font-size: 30px !important;
@@ -54,18 +54,14 @@ if st.session_state.fase == 'configuracao':
         lista_de_equipes = [f"Equipe {i+1}" for i in range(num_equipes)]
         st.selectbox("Quem vai começar o jogo?", lista_de_equipes, key="equipe_start")
     
-    st.markdown("### 🎲 Sorteio de Alunos (Opcional)")
-    st.info("Cole os nomes dos alunos (um por linha) para o sistema sortear e dividir as equipas automaticamente.")
-    alunos_texto = st.text_area("Lista de Alunos", height=150, placeholder="Exemplo:\nJoão\nMaria\nCarlos\nAna...")
-
-    st.markdown("### 📝 Lista de Perguntas")
+    st.markdown("### Cole as perguntas e opções abaixo.")
     st.error("**REGRA:** Separe com PONTO E VÍRGULA ( ; ) e coloque um ASTERISCO (*) na resposta certa!")
     
     perguntas_exemplo = """Qual comando mostra mensagens na tela em Python? ; A) input() ; *B) print() ; C) show() ; D) display()"""
     
-    perguntas_texto = st.text_area("Cole as perguntas e opções abaixo", height=200, value=perguntas_exemplo)
+    perguntas_texto = st.text_area("Lista de Perguntas", height=200, value=perguntas_exemplo)
     
-    if st.button("▶️ Sortear e Começar Jogo", use_container_width=True):
+    if st.button("▶️ Começar Jogo", use_container_width=True):
         linhas = [p.strip() for p in perguntas_texto.strip().split('\n') if p.strip()]
         
         if len(linhas) == 0:
@@ -73,15 +69,6 @@ if st.session_state.fase == 'configuracao':
         else:
             st.session_state.equipes = lista_de_equipes
             st.session_state.pontos = {equipe: 0 for equipe in st.session_state.equipes}
-            
-            # LÓGICA DO SORTEIO DE ALUNOS
-            alunos = [a.strip() for a in alunos_texto.split('\n') if a.strip()]
-            random.shuffle(alunos)
-            
-            st.session_state.membros_equipes = {equipe: [] for equipe in st.session_state.equipes}
-            for i, aluno in enumerate(alunos):
-                nome_equipe = st.session_state.equipes[i % len(st.session_state.equipes)]
-                st.session_state.membros_equipes[nome_equipe].append(aluno)
             
             st.session_state.perguntas = {i+1: linha for i, linha in enumerate(linhas)}
             st.session_state.perguntas_disponiveis = list(st.session_state.perguntas.keys())
@@ -106,17 +93,14 @@ elif st.session_state.fase == 'jogo':
     st.markdown("<h1 style='text-align: center;'>🏆 Quiz Interativo 🏆</h1>", unsafe_allow_html=True)
     st.write("---")
     
-    # PLACAR COM OS NOMES DOS ALUNOS
+    # PLACAR
     colunas_placar = st.columns(len(st.session_state.equipes))
     for i, equipe in enumerate(st.session_state.equipes):
-        membros = st.session_state.membros_equipes.get(equipe, [])
-        texto_membros = f"\n\n👥 {', '.join(membros)}" if membros else ""
-        
         with colunas_placar[i]:
             if i == st.session_state.turno_atual:
-                st.success(f"**{equipe}**\n\n🎯 {st.session_state.pontos[equipe]} pts{texto_membros}")
+                st.success(f"**{equipe}**\n\n🎯 {st.session_state.pontos[equipe]} pts")
             else:
-                st.info(f"**{equipe}**\n\n{st.session_state.pontos[equipe]} pts{texto_membros}")
+                st.info(f"**{equipe}**\n\n{st.session_state.pontos[equipe]} pts")
     st.write("---")
 
     equipe_da_vez = st.session_state.equipes[st.session_state.turno_atual]
@@ -172,6 +156,7 @@ elif st.session_state.fase == 'jogo':
         
         st.markdown(f"<h2>Vez da {equipe_da_vez} 💰 Valendo {st.session_state.valor_pergunta} pts</h2>", unsafe_allow_html=True)
         
+        # EXIBIÇÃO DA PERGUNTA E DO CRONÓMETRO LADO A LADO
         if not st.session_state.mostrar_resultado:
             col_perg, col_tempo = st.columns([3, 1])
             
@@ -197,8 +182,9 @@ elif st.session_state.fase == 'jogo':
                 """
                 components.html(timer_html, height=200)
                 
-            st.write("---") 
+            st.write("---") # Divisória antes das opções de resposta
             
+            # BOTÕES DE RESPOSTA
             for i, op_texto in enumerate(opcoes_limpas):
                 if st.button(f"👉 {op_texto}", use_container_width=True):
                     st.session_state.opcao_clicada = i
@@ -226,6 +212,7 @@ elif st.session_state.fase == 'jogo':
                     proxima_equipe()
                     st.rerun()
                     
+        # FASE 2: RESULTADO (SEM O CRONÓMETRO, PERGUNTA OCUPA TUDO)
         else:
             st.markdown(f'<div class="pergunta-gigante">Pergunta {num_atual}:<br>{pergunta_texto}</div>', unsafe_allow_html=True)
             clicada = st.session_state.opcao_clicada
